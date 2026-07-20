@@ -74,10 +74,11 @@ RUN echo "" && \
     printf '#!/bin/sh\nLLVMDIR=/usr/lib/llvm22/lib\ncase "$1" in\n  --version) echo "22.1.3" ;;\n  --prefix) echo "/usr/lib/llvm22" ;;\n  --libdir) echo "$LLVMDIR" ;;\n  --includedir) echo "/usr/lib/llvm22/include" ;;\n  --libs) for f in "$LLVMDIR"/libLLVM*.a; do n=$(basename "$f" .a); echo -n "-l${n#lib} "; done; echo -n "-lzstd" ;;\n  --system-libs) echo "-lzstd" ;;\n  --components) echo "all" ;;\n  --shared-mode) echo "static" ;;\n  *) exit 1 ;;\nesac\n' > /usr/local/bin/llvm-config && \
     chmod +x /usr/local/bin/llvm-config && \
     export PATH="/usr/local/bin:$PATH" && \
-    sed -i 's/use std::{env, io, sync::LazyLock};/use std::{env, fmt, io, sync::LazyLock};/' src/core/log/console.rs && \
     sed -i '/^use crate::{Config, Result, apply};/a use tracing_subscriber::fmt::time::FormatTime;' src/core/log/console.rs && \
-    printf '\nstruct LocalTimer;\n\nimpl FormatTime for LocalTimer {\n\tfn format_time(&self, w: &mut impl fmt::Write) -> fmt::Result {\n\t\twrite!(w, "{}", chrono::Local::now().format("%%Y-%%m-%%d %%H:%%M:%%S%%.3f"))\n\t}\n}\n' >> src/core/log/console.rs && \
-    sed -i '/\.with_ansi(config\.log_colors),/a\                    .with_timer(LocalTimer),' src/core/log/console.rs && \
+    sed -i '/^use crate::{Config, Result, apply};/a use std::fmt as std_fmt;' src/core/log/console.rs && \
+    printf "\nstruct LocalTimer;\n\nimpl FormatTime for LocalTimer {\n\tfn format_time(&self, w: &mut Writer<'_>) -> std_fmt::Result {\n\t\twrite!(w, \"{}\", chrono::Local::now().format(\"%%Y-%%m-%%d %%H:%%M:%%S%%.3f\"))\n\t}\n}\n" >> src/core/log/console.rs && \
+    sed -i 's/full: Format<Full>,/full: Format<Full, LocalTimer>,/' src/core/log/console.rs && \
+    sed -i 's/\.with_ansi(config\.log_colors),/.with_ansi(config.log_colors).with_timer(LocalTimer),/' src/core/log/console.rs && \
     cargo build --release \
         --no-default-features \
         --features "brotli_compression,direct_tls,element_hacks,gzip_compression,io_uring,media_thumbnail,url_preview,zstd_compression,sentry_telemetry,otlp_telemetry,console,ring,bindgen-static" \
