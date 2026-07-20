@@ -110,7 +110,21 @@ Below is the complete list of available options that can be used to customize yo
 | `CONFIG_PATH`      | Configuration directory                                           | `/config/`             |          |
 | `CONFIG_FILE`      | Config filename                                                   | `conduwuit.toml`       |          |
 | `LISTEN_PORT`      | Port for continuwuity to listen on                                | `8008`                 |          |
-| `LISTEN_ADDRESS`   | IP for continuwuity to listen on                                  | `0.0.0.0`              |          |
+| `LISTEN_IP`        | IP for continuwuity to listen on                                  | `0.0.0.0`              |          |
+| `ALLOW_REGISTRATION` | Allow user registration                                         | `false`                |          |
+| `ALLOW_FEDERATION`   | Allow federation with other servers                              | `true`                 |          |
+| `ALLOW_ENCRYPTION`   | Allow encrypted rooms and events                                 | `true`                 |          |
+| `ALLOW_ROOM_CREATION` | Allow standard users to create rooms                            | `true`                 |          |
+
+Any `CONTINUWUITY_*` environment variable is passed directly into the TOML config. Use `__` as a section separator. Examples:
+
+| Example Variable | Generated TOML |
+|---|---|
+| `CONTINUWUITY_OAUTH__OIDC__CLIENT_SECRET=nono` | `[oauth.oidc]` → `client_secret = "nono"` |
+| `CONTINUWUITY_WELL_KNOWN__CLIENT=https://example.com` | `[global.well_known]` → `client = "https://..."` |
+| `CONTINUWUITY_OAUTH__OIDC__ADDITIONAL_SCOPES=["profile", "email"]` | `[oauth.oidc]` → `additional_scopes = ["profile", "email"]` |
+
+The `well_known` and `proxy` sections are automatically mapped under `[global]`.
 
 #### Log Configuration
 

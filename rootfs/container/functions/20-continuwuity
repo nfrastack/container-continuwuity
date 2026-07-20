@@ -5,8 +5,9 @@
 
 continuwuity_bootstrap_filesystem() {
     create_folder \
-        "${DATA_PATH},${CONFIG_PATH}" \
-        continuwuity:continuwuity 750
+                    "${DATA_PATH}, \
+                    ${CONFIG_PATH}" \
+                    continuwuity:continuwuity 750
 }
 
 continuwuity_configure_application() {
@@ -20,4 +21,92 @@ continuwuity_configure_application() {
     if [ "${SETUP_TYPE,,}" = "auto" ] ; then
         sanity_var SERVER_NAME "Matrix server name"
     fi
+}
+
+__toml_val() {
+    local v="$1"
+    if [ "$v" = "true" ] || [ "$v" = "false" ]; then echo "$v"
+    elif [[ "$v" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then echo "$v"
+    elif [[ "$v" == \[*\] ]] || [[ "$v" == \{*\} ]]; then echo "$v"
+    else
+        v="${v//\\/\\\\}"
+        v="${v//\"/\\\"}"
+        printf '"%s"\n' "$v"
+    fi
+}
+
+continuwuity_generate_config() {
+    if [ "${SETUP_TYPE,,}" != "auto" ] ; then
+        return
+    fi
+
+    local config=""
+
+    config+="[global]"$'\n'
+    config+="server_name = $(__toml_val "${SERVER_NAME}")"$'\n'
+    config+="address = [$(__toml_val "${LISTEN_IP}")]"$'\n'
+    config+="port = ${LISTEN_PORT}"$'\n'
+    config+="database_path = $(__toml_val "${DATA_PATH%/}")"$'\n'
+    config+="new_user_displayname_suffix = $(__toml_val "${CONTINUWUITY_NEW_USER_DISPLAYNAME_SUFFIX}")"$'\n'
+    config+="log = $(__toml_val "${LOG_LEVEL}")"$'\n'
+    config+="allow_registration = ${ALLOW_REGISTRATION}"$'\n'
+    config+="allow_federation = ${ALLOW_FEDERATION}"$'\n'
+    config+="allow_encryption = ${ALLOW_ENCRYPTION}"$'\n'
+    config+="allow_room_creation = ${ALLOW_ROOM_CREATION}"$'\n'
+
+    local -a pt_entries=()
+
+    for var in "${!CONTINUWUITY_@}"; do
+        case "$var" in
+            CONTINUWUITY_DATABASE_PATH|CONTINUWUITY_ADDRESS|CONTINUWUITY_PORT|CONTINUWUITY_LOG_LEVEL|CONTINUWUITY_LOG_FILE|CONTINUWUITY_CONFIG|CONTINUWUITY_NEW_USER_DISPLAYNAME_SUFFIX|CONTINUWUITY_SERVER_NAME|CONTINUWUITY_ALLOW_REGISTRATION|CONTINUWUITY_ALLOW_FEDERATION|CONTINUWUITY_ALLOW_ENCRYPTION|CONTINUWUITY_ALLOW_ROOM_CREATION)
+                continue
+            ;;
+        esac
+
+        val="${!var}"
+        remainder="${var#CONTINUWUITY_}"
+        parts=$(echo "$remainder" | tr '[:upper:]' '[:lower:]')
+
+        if [[ "$remainder" == *"__"* ]]; then
+            local segs=() p="$parts"
+            while [[ "$p" == *"__"* ]]; do
+                segs+=("${p%%__*}")
+                p="${p#*__}"
+            done
+            segs+=("$p")
+            key="${segs[-1]}"
+            unset 'segs[-1]'
+            section=""
+            for s in "${segs[@]}"; do
+                [ -n "$section" ] && section="${section}." || section=""
+                section="${section}${s}"
+            done
+            case "$section" in
+                well_known|proxy) section="global.${section}" ;;
+            esac
+        else
+            section=""
+            key="$parts"
+        fi
+
+        pt_entries+=("${section}|${key}=$(__toml_val "$val")")
+    done
+
+    if [ ${#pt_entries[@]} -gt 0 ]; then
+        IFS=$'\n' pt_sorted=($(sort <<< "${pt_entries[*]}"))
+        unset IFS
+        current_section=""
+        for entry in "${pt_sorted[@]}"; do
+            sec="${entry%%|*}"
+            kv="${entry#*|}"
+            if [ -n "$sec" ] && [ "$sec" != "$current_section" ]; then
+                config+=""$'\n'
+                config+="[${sec}]"$'\n'
+                current_section="$sec"
+            fi
+            config+="${kv}"$'\n'
+        done
+    fi
+
+    write_file continuwuity:continuwuity@"${CONFIG_PATH%/}/${CONFIG_FILE}":640 <<< "$config"
 }

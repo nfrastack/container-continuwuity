@@ -10,19 +10,30 @@ prepare_service single
 check_container_initialized
 check_service_initialized init
 
-case "${LOG_TYPE,,}" in
-    file )
-        exec_arg=">> ${LOG_PATH%/}/${LOG_FILE} 2>&1"
-    ;;
-    none )
-        exec_arg="> /dev/null 2>&1"
-    ;;
-    * )
-        exec_arg=""
-    ;;
-esac
-
 liftoff
 
-eval exec s6-setuidgid continuwuity \
-    /usr/local/bin/conduwuit --config "${CONFIG_PATH%/}/${CONFIG_FILE}" ${exec_arg}
+case "${LOG_TYPE,,}" in
+    file )
+        exec s6-setuidgid continuwuity \
+            /usr/local/bin/conduwuit \
+            --config "${CONFIG_PATH%/}/${CONFIG_FILE}" \
+            >> "${LOG_PATH%/}/${LOG_FILE}" 2>&1
+    ;;
+    both )
+        exec s6-setuidgid continuwuity \
+            /usr/local/bin/conduwuit \
+            --config "${CONFIG_PATH%/}/${CONFIG_FILE}" \
+            2>&1 | tee -a "${LOG_PATH%/}/${LOG_FILE}"
+    ;;
+    none )
+        exec s6-setuidgid continuwuity \
+            /usr/local/bin/conduwuit \
+            --config "${CONFIG_PATH%/}/${CONFIG_FILE}" \
+            > /dev/null 2>&1
+    ;;
+    * )
+        exec s6-setuidgid continuwuity \
+            /usr/local/bin/conduwuit \
+            --config "${CONFIG_PATH%/}/${CONFIG_FILE}"
+    ;;
+esac

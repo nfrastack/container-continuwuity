@@ -9,6 +9,7 @@ SERVICE_NAME="continuwuity"
 
 continuwuity_bootstrap_filesystem
 continuwuity_configure_application
+continuwuity_generate_config
 
 custom_files "${CONTAINER_CUSTOM_PATH}" /
 custom_scripts "${CONTAINER_CUSTOM_SCRIPTS_PATH}"
