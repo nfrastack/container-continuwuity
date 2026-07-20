@@ -1,0 +1,23 @@
+#!/command/with-contenv bash
+# SPDX-FileCopyrightText: © 2026 Nfrastack <code@nfrastack.com>
+#
+# SPDX-License-Identifier: MIT
+
+continuwuity_bootstrap_filesystem() {
+    create_folder \
+        "${DATA_PATH},${CONFIG_PATH}" \
+        continuwuity:continuwuity 750
+}
+
+continuwuity_configure_application() {
+    case "${LOG_TYPE,,}" in
+        file | both )
+            create_folder "${LOG_PATH}" continuwuity:continuwuity 775
+            create_logrotate continuwuity "${LOG_PATH%/}/${LOG_FILE}" continuwuity continuwuity
+        ;;
+    esac
+
+    if [ "${SETUP_TYPE,,}" = "auto" ] ; then
+        sanity_var SERVER_NAME "Matrix server name"
+    fi
+}

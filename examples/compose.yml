@@ -1,0 +1,19 @@
+services:
+
+  continuwuity-app:
+    image: docker.io/nfrastack/continuwuity
+    container_name: continuwuity-app
+    volumes:
+      - ./config:/config
+      - ./data:/data
+      - ./logs:/logs
+    environment:
+      - SERVER_NAME=matrix.example.com
+      - TIMEZONE=America/Vancouver
+    networks:
+      - services
+    restart: always
+
+networks:
+  services:
+    external: true
