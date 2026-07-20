@@ -35,7 +35,6 @@ RUN echo "" && \
                 10-nginx/NGINX_MODE=proxy \
                 10-nginx/NGINX_PROXY_URL=http://localhost:[env:LISTEN_PORT] \
                 10-nginx/NGINX_SITE_ENABLED=continuwuity \
-                10-nginx/NGINX_CREATE_SAMPLE_HTML=FALSE \
               " \
               && \
     CONTINUWUITY_BUILD_DEPS_ALPINE=" \
