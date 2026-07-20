@@ -24,7 +24,6 @@ ARG \
 COPY CHANGELOG.md /usr/src/container/CHANGELOG.md
 COPY LICENSE /usr/src/container/LICENSE
 COPY README.md /usr/src/container/README.md
-
 ENV \
     IMAGE_NAME="nfrastack/continuwuity" \
     IMAGE_REPO_URL="https://github.com/nfrastack/container-continuwuity/"
@@ -37,11 +36,8 @@ RUN echo "" && \
                 10-nginx/NGINX_SITE_ENABLED=continuwuity \
               " \
               && \
-    CONTINUWUITY_BUILD_DEPS_ALPINE=" \
+     CONTINUWUITY_BUILD_DEPS_ALPINE=" \
                                     build-base \
-                                    cargo \
-                                    clang \
-                                    clang-dev \
                                     clang22-static \
                                     cmake \
                                     git \
@@ -59,15 +55,18 @@ RUN echo "" && \
                                   && \
     source /container/base/functions/container/build && \
     container_build_log image && \
-    create_user continuwuity 8008 continuwuity 8008 /dev/null && \
+    create_user matrix 8008 matrix 8008 /dev/null && \
     package update && \
     package upgrade && \
     package install \
                         CONTINUWUITY_BUILD_DEPS \
                         && \
     \
+    clone_git_repo "${CONTINUWUITY_REPO_URL}" "${CONTINUWUITY_VERSION}" /usr/src/continuwuity && \
+    cd /usr/src/continuwuity && \
+    RUST_VERSION=$(grep 'channel = ' rust-toolchain.toml | cut -d'"' -f2) && \
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-        | sh -s -- -y --profile minimal --default-toolchain 1.97.1 && \
+        | sh -s -- -y --profile minimal --default-toolchain "${RUST_VERSION}" && \
     . "$HOME/.cargo/env" && \
     \
     export LIBCLANG_PATH="/usr/lib/llvm22/lib" && \
@@ -75,9 +74,10 @@ RUN echo "" && \
     printf '#!/bin/sh\nLLVMDIR=/usr/lib/llvm22/lib\ncase "$1" in\n  --version) echo "22.1.3" ;;\n  --prefix) echo "/usr/lib/llvm22" ;;\n  --libdir) echo "$LLVMDIR" ;;\n  --includedir) echo "/usr/lib/llvm22/include" ;;\n  --libs) for f in "$LLVMDIR"/libLLVM*.a; do n=$(basename "$f" .a); echo -n "-l${n#lib} "; done; echo -n "-lzstd" ;;\n  --system-libs) echo "-lzstd" ;;\n  --components) echo "all" ;;\n  --shared-mode) echo "static" ;;\n  *) exit 1 ;;\nesac\n' > /usr/local/bin/llvm-config && \
     chmod +x /usr/local/bin/llvm-config && \
     export PATH="/usr/local/bin:$PATH" && \
-    \
-    clone_git_repo "${CONTINUWUITY_REPO_URL}" "${CONTINUWUITY_VERSION}" /usr/src/continuwuity && \
-    cd /usr/src/continuwuity && \
+    sed -i 's/use std::{env, io, sync::LazyLock};/use std::{env, fmt, io, sync::LazyLock};/' src/core/log/console.rs && \
+    sed -i '/^use crate::{Config, Result, apply};/a use tracing_subscriber::fmt::time::FormatTime;' src/core/log/console.rs && \
+    printf '\nstruct LocalTimer;\n\nimpl FormatTime for LocalTimer {\n\tfn format_time(&self, w: &mut impl fmt::Write) -> fmt::Result {\n\t\twrite!(w, "{}", chrono::Local::now().format("%%Y-%%m-%%d %%H:%%M:%%S%%.3f"))\n\t}\n}\n' >> src/core/log/console.rs && \
+    sed -i '/\.with_ansi(config\.log_colors),/a\                    .with_timer(LocalTimer),' src/core/log/console.rs && \
     cargo build --release \
         --no-default-features \
         --features "brotli_compression,direct_tls,element_hacks,gzip_compression,io_uring,media_thumbnail,url_preview,zstd_compression,sentry_telemetry,otlp_telemetry,console,ring,bindgen-static" \

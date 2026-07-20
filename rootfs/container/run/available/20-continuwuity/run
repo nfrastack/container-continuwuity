@@ -12,28 +12,18 @@ check_service_initialized init
 
 liftoff
 
+_continuwuity="/usr/local/bin/conduwuit --config ${CONFIG_PATH%/}/${CONFIG_FILE}"
 case "${LOG_TYPE,,}" in
     file )
-        exec s6-setuidgid continuwuity \
-            /usr/local/bin/conduwuit \
-            --config "${CONFIG_PATH%/}/${CONFIG_FILE}" \
-            >> "${LOG_PATH%/}/${LOG_FILE}" 2>&1
+        exec s6-setuidgid matrix sh -c "exec ${_continuwuity} >> \"${LOG_PATH%/}/${LOG_FILE}\" 2>&1"
     ;;
     both )
-        exec s6-setuidgid continuwuity \
-            /usr/local/bin/conduwuit \
-            --config "${CONFIG_PATH%/}/${CONFIG_FILE}" \
-            2>&1 | tee -a "${LOG_PATH%/}/${LOG_FILE}"
+        exec s6-setuidgid matrix sh -c "exec ${_continuwuity} 2>&1 | tee -a \"${LOG_PATH%/}/${LOG_FILE}\""
     ;;
     none )
-        exec s6-setuidgid continuwuity \
-            /usr/local/bin/conduwuit \
-            --config "${CONFIG_PATH%/}/${CONFIG_FILE}" \
-            > /dev/null 2>&1
+        exec s6-setuidgid matrix ${_continuwuity} > /dev/null 2>&1
     ;;
     * )
-        exec s6-setuidgid continuwuity \
-            /usr/local/bin/conduwuit \
-            --config "${CONFIG_PATH%/}/${CONFIG_FILE}"
+        exec s6-setuidgid matrix ${_continuwuity}
     ;;
 esac

@@ -139,8 +139,8 @@ The `well_known` and `proxy` sections are automatically mapped under `[global]`.
 
 | Type  | Name           | ID   |
 | ----- | -------------- | ---- |
-| User  | `continuwuity` | 8008 |
-| Group | `continuwuity` | 8008 |
+| User  | `matrix` | 8008 |
+| Group | `matrix` | 8008 |
 
 ### Networking
 
