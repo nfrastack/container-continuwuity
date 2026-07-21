@@ -116,7 +116,17 @@ Below is the complete list of available options that can be used to customize yo
 | `ALLOW_ENCRYPTION`   | Allow encrypted rooms and events                                 | `true`                 |          |
 | `ALLOW_ROOM_CREATION` | Allow standard users to create rooms                            | `true`                 |          |
 
-Any `CONTINUWUITY_*` environment variable is passed directly into the TOML config. Use `__` as a section separator. Examples:
+All configuration is generated from environment variables prefixed with `CONTINUWUITY_*`. Each variable maps directly to a TOML config key. Use `__` (double underscore) for section nesting.
+
+Three ways to set any config value (listed in precedence order):
+
+| Method | Example | Description |
+|--------|---------|-------------|
+| `CONTINUWUITY_*` | `CONTINUWUITY_OAUTH__OIDC__CLIENT_SECRET=xxx` | Full prefix — always takes priority |
+| Short section alias | `OAUTH__OIDC__CLIENT_SECRET=xxx` | Same as above, without the prefix. Any var containing `__` is auto-mapped |
+| Short name alias | `OIDC_CLIENT_SECRET=xxx` | Convenience alias for common vars (see table below) |
+
+**TOML section mapping examples:**
 
 | Example Variable | Generated TOML |
 |---|---|
@@ -126,14 +136,28 @@ Any `CONTINUWUITY_*` environment variable is passed directly into the TOML confi
 
 The `well_known` and `proxy` sections are automatically mapped under `[global]`.
 
+##### OIDC / Well-Known Short Name Aliases
+
+| Short Name | Maps to TOML |
+|---|---|
+| `OIDC_CLIENT_SECRET` | `[oauth.oidc]` → `client_secret` |
+| `OIDC_DISCOVERY_URL` | `[oauth.oidc]` → `discovery_url` |
+| `OIDC_CLIENT_ID` | `[oauth.oidc]` → `client_id` |
+| `OIDC_ADDITIONAL_SCOPES` | `[oauth.oidc]` → `additional_scopes` |
+| `OIDC_PROMPT_FOR_LOCALPART` | `[oauth.oidc]` → `prompt_for_localpart` |
+| `OIDC_AUTOLOGIN` | `[oauth.oidc]` → `autologin` |
+| `OIDC_PREFERRED_USERNAME_CLAIM` | `[oauth.oidc]` → `preferred_username_claim` |
+| `WELL_KNOWN_CLIENT` | `[global.well_known]` → `client` |
+| `WELL_KNOWN_SERVER` | `[global.well_known]` → `server` |
+
 #### Log Configuration
 
-| Parameter   | Description                                                  | Default                 | Advanced |
-| ----------- | ------------------------------------------------------------ | ----------------------- | -------- |
-| `LOG_TYPE`  | Log output type `console` `file` `both` `none`               | `both`                  |          |
-| `LOG_LEVEL` | Log level (`trace`, `debug`, `info`, `warn`, `error`, `off`) | `info`                  |          |
-| `LOG_PATH`  | Logfiles path                                                | `/logs/continuwuity/`   |          |
-| `LOG_FILE`  | Logfile name                                                 | `continuwuity.log`      |          |
+| Parameter   | Description                                                  | Default                 | Advanced | TOML Key |
+| ----------- | ------------------------------------------------------------ | ----------------------- | -------- | -------- |
+| `LOG_TYPE`  | Log output type `console` `file` `both` `none`               | `both`                  |          | — |
+| `LOG_LEVEL` | Log level (`trace`, `debug`, `info`, `warn`, `error`, `off`) | `info`                  |          | `log` |
+| `LOG_PATH`  | Logfiles path                                                | `/logs/continuwuity/`   |          | — |
+| `LOG_FILE`  | Logfile name                                                 | `continuwuity.log`      |          | — |
 
 ## Users and Groups
 
