@@ -3,17 +3,33 @@ services:
   continuwuity-app:
     image: docker.io/nfrastack/continuwuity
     container_name: continuwuity-app
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.continuwuity.rule=Host(`matrix.example.com`)
+      - traefik.http.services.continuwuity.loadbalancer.server.port=8008
+      - traefik.proxy.visibility=public
+      - nfrastack.herald.enable=true
     volumes:
       - ./config:/config
       - ./data:/data
       - ./logs:/logs
     environment:
-      - SERVER_NAME=matrix.example.com
       - TIMEZONE=America/Vancouver
+
+      - SERVER_NAME=matrix.example.com
+
+      - WELL_KNOWN_CLIENT=https://matrix.example.com
+      - WELL_KNOWN_SERVER=matrix.example.com:443
+
+      - ALLOW_REGISTRATION=true
     networks:
+      - proxy
       - services
+
     restart: always
 
 networks:
+  proxy:
+    external: true
   services:
     external: true

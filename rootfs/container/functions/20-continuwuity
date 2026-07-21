@@ -14,7 +14,7 @@ continuwuity_configure_application() {
     case "${LOG_TYPE,,}" in
         file | both )
             create_folder "${LOG_PATH}" matrix:matrix 775
-            create_logrotate continuwuity "${LOG_PATH%/}/${LOG_FILE}" matrix matrix
+            create_logrotate continuwuity "${LOG_PATH%/}/${LOG_FILE}" continuwuity matrix matrix
         ;;
     esac
 
@@ -48,7 +48,11 @@ continuwuity_generate_config() {
         remainder="${var#CONTINUWUITY_}"
         key=$(echo "$remainder" | tr '[:upper:]' '[:lower:]')
 
-        [ "$remainder" = "LOG_LEVEL" ] && key="log"
+        # Skip vars that aren't TOML config keys
+        case "$remainder" in
+            LOG_LEVEL) key="log" ;;
+            LOG_FILE|LOG_PATH|LOG_TYPE|CONFIG_PATH|CONFIG_FILE) continue ;;
+        esac
 
         if [[ "$remainder" == *"__"* ]]; then
             local segs=() p="$key"
