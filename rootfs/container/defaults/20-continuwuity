@@ -33,7 +33,7 @@ CONTINUWUITY_WELL_KNOWN__CLIENT=${CONTINUWUITY_WELL_KNOWN__CLIENT:-${WELL_KNOWN_
 CONTINUWUITY_WELL_KNOWN__SERVER=${CONTINUWUITY_WELL_KNOWN__SERVER:-${WELL_KNOWN_SERVER:-}}
 
 # Auto-map vars with __ to TOML sections - OAUTH__OIDC__* directly
-for var in $(env | sed 's/=.*//' | grep '^[A-Z]' | grep -v '^CONTINUWUITY_' | grep -F '__'); do
+for var in $(env | sed 's/=.*//' | grep -E '^[A-Z_][A-Z0-9_]*$' | grep -v '^CONTINUWUITY_' | grep -F '__'); do
     eval "CONTINUWUITY_${var}=\${CONTINUWUITY_${var}:-\${${var}}}"
 done
 
