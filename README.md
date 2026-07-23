@@ -115,6 +115,7 @@ Below is the complete list of available options that can be used to customize yo
 | `ALLOW_FEDERATION`   | Allow federation with other servers                              | `true`                 |          |
 | `ALLOW_ENCRYPTION`   | Allow encrypted rooms and events                                 | `true`                 |          |
 | `ALLOW_ROOM_CREATION` | Allow standard users to create rooms                            | `true`                 |          |
+| `UPLOAD_MAX_SIZE`  | Max media upload size (Nginx-style format, e.g. `50M`, `1G`)    | `20M`                  |          |
 
 All configuration is generated from environment variables prefixed with `CONTINUWUITY_*`. Each variable maps directly to a TOML config key. Use `__` (double underscore) for section nesting.
 

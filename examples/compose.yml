@@ -22,6 +22,8 @@ services:
       - WELL_KNOWN_SERVER=matrix.example.com:443
 
       - ALLOW_REGISTRATION=true
+
+      # - UPLOAD_MAX_SIZE=100M
     networks:
       - proxy
       - services

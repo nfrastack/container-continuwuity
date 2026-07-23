@@ -65,9 +65,9 @@ RUN echo "" && \
     clone_git_repo "${CONTINUWUITY_REPO_URL}" "${CONTINUWUITY_VERSION}" /usr/src/continuwuity && \
     cd /usr/src/continuwuity && \
     RUST_VERSION=$(grep 'channel = ' rust-toolchain.toml | cut -d'"' -f2) && \
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    curl -sSf https://sh.rustup.rs \
         | sh -s -- -y --profile minimal --default-toolchain "${RUST_VERSION}" && \
-    . "$HOME/.cargo/env" && \
+    source /root/.cargo/env && \
     \
     export LIBCLANG_PATH="/usr/lib/llvm22/lib" && \
     export RUSTFLAGS="-L /usr/lib" && \

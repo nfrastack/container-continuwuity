@@ -32,6 +32,20 @@ CONTINUWUITY_OAUTH__OIDC__PREFERRED_USERNAME_CLAIM=${CONTINUWUITY_OAUTH__OIDC__P
 CONTINUWUITY_WELL_KNOWN__CLIENT=${CONTINUWUITY_WELL_KNOWN__CLIENT:-${WELL_KNOWN_CLIENT:-}}
 CONTINUWUITY_WELL_KNOWN__SERVER=${CONTINUWUITY_WELL_KNOWN__SERVER:-${WELL_KNOWN_SERVER:-}}
 
+UPLOAD_MAX_SIZE=${UPLOAD_MAX_SIZE:-"50M"}
+
+if [ -z "${CONTINUWUITY_MAX_REQUEST_SIZE+set}" ]; then
+    _upl_num="${UPLOAD_MAX_SIZE%[kKmMgGtT]}"
+    _upl_unit="${UPLOAD_MAX_SIZE: -1}"
+    case "${_upl_unit,,}" in
+        k) CONTINUWUITY_MAX_REQUEST_SIZE=$((_upl_num * 1024)) ;;
+        m) CONTINUWUITY_MAX_REQUEST_SIZE=$((_upl_num * 1024 * 1024)) ;;
+        g) CONTINUWUITY_MAX_REQUEST_SIZE=$((_upl_num * 1024 * 1024 * 1024)) ;;
+        t) CONTINUWUITY_MAX_REQUEST_SIZE=$((_upl_num * 1024 * 1024 * 1024 * 1024)) ;;
+        *) CONTINUWUITY_MAX_REQUEST_SIZE="$_upl_num" ;;
+    esac
+fi
+
 # Auto-map vars with __ to TOML sections - OAUTH__OIDC__* directly
 for var in $(env | sed 's/=.*//' | grep -E '^[A-Z_][A-Z0-9_]*$' | grep -v '^CONTINUWUITY_' | grep -F '__'); do
     eval "CONTINUWUITY_${var}=\${CONTINUWUITY_${var}:-\${${var}}}"
