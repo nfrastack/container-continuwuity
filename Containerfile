@@ -18,7 +18,7 @@ LABEL \
         org.opencontainers.image.licenses="MIT"
 
 ARG \
-    CONTINUWUITY_VERSION="v26.6.2" \
+    CONTINUWUITY_VERSION="v26.7.2" \
     CONTINUWUITY_REPO_URL="https://forgejo.ellis.link/continuwuation/continuwuity"
 
 COPY CHANGELOG.md /usr/src/container/CHANGELOG.md
