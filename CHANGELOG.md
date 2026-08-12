@@ -4,4 +4,4 @@
       - Initial Release
       - Uses nfrastack/container-nginx base image
       - Alpine 3.24
-      - Continuwuity v26.7.2
+      - Continuwuity v26.7.3
