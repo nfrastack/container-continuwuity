@@ -1,3 +1,9 @@
+## 1.0.1 2026-08-24 <code at nfrastack dot com>
+
+   ### Added
+      - Continuwuity 26.8.1
+
+
 ## 1.0.0 2026-07-18 <code at nfrastack dot com>
 
    ### Added
