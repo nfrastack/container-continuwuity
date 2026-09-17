@@ -1,3 +1,9 @@
+## 1.0.2 2026-09-16 <code at nfrastack dot com>
+
+   ### Added
+      - 2026.9.0
+
+
 ## 1.0.1 2026-08-24 <code at nfrastack dot com>
 
    ### Added
